@@ -6,6 +6,29 @@ function startsWith($haystack, $needle) {
     return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
 }
 
+function sendMessage($phone, $text)
+{
+	// Install the library via PEAR or download the .zip file to your project folder.
+	// This line loads the library
+	require '../Twilio-Server/Services/Twilio.php';
+
+	$sid = "ACd4dbf05b911868c0d3b7517bc5b2aee5"; // Your Account SID from www.twilio.com/user/account
+	$token = "1f59fcb52b10490032e3587917f39b2a"; // Your Auth Token from www.twilio.com/user/account
+
+	$client = new Services_Twilio($sid, $token);
+	$message = $client->account->messages->sendMessage(
+  		'16479553883', // From a valid Twilio number
+  		$phone, //'12899239409', // Text this number
+  		$text //"Hello RECEIVER!"
+	);
+
+//echo '<h2> Sending Messages with Twilio </h2>';
+//print $message->sid;
+
+}
+
+
+
 function process_group($con)
 {
 	$sql = "SELECT id, name, type, comment FROM bpgroups";
@@ -121,6 +144,59 @@ function process_answer($con, $user_body, $uiid)
 			else
 			{
 				$responseMessage = "answer created.";
+				
+				
+				
+				//////
+				$sql = "select phone from bpusers where id in (SELECT ownerid from bpquerys where id=" 
+					. $queryid . ") ";
+	
+				if (!($result=mysqli_query($con,$sql)))
+				{
+					echo "Error description: " . mysqli_error($con) ;
+				}	
+	
+				$num = mysqli_num_rows($result);
+				$i=0;
+				$phone = "";
+	
+				while ($i < $num) 
+				{
+					if($row = $result->fetch_assoc())
+					{
+						$phone = $row["phone"];
+						echo " phone of queryer = " . $phone . "\n";
+					}
+					$i++;  	
+				}
+				//////
+				$sql = "select phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid in "
+				       . " ( select groupid from bpquerys where id=" . $queryid . " ) )" ;
+	
+				if (!($result=mysqli_query($con,$sql)))
+				{
+					echo "Error description: " . mysqli_error($con) ;
+				}	
+	
+				$num = mysqli_num_rows($result);
+				$i=0;
+				$phone = "";
+	
+				while ($i < $num) 
+				{
+					if($row = $result->fetch_assoc())
+					{
+						$phone = $row["phone"];
+						//echo " phone of group = " . $phone . "\n";
+					}
+					$i++;
+				}
+				//////
+				
+				//function sendMessage($phone, $text)
+
+				
+				
 			}
 			return $responseMessage;
 }
@@ -191,11 +267,7 @@ function process_list_queries($con, $user_body, $uiid)
 	
 	$sql = "SELECT id, ownerid, groupid, content FROM bpquerys";
 	if($queryid>0)
-	{
 		$sql .= " where id=" . $queryid;
-	    if($groupid>0)
-		   $sql .= " and groupid=" . $groupid;
-	}
 	else if($groupid>0)
 		$sql .= " where groupid=" . $groupid;
 		
@@ -245,7 +317,6 @@ function process_list_answers($con, $user_body, $uiid)
 
 function get_next_queryid($con, $groupid, $queryid)
 {
-    
 	$sql = "SELECT max(id) as qid from bpquerys where id< ". $queryid ;
 	if($groupid!=0)
 	    $sql .= " and groupid=". $groupid ;
@@ -263,7 +334,6 @@ function get_next_queryid($con, $groupid, $queryid)
 	{
 		if($row = $result->fetch_assoc())
 		{
-			echo "get next 1\n";
 			$qid = intval($row["qid"]);
 			if($qid>0)
 				return $qid;	
@@ -288,12 +358,10 @@ function get_next_queryid($con, $groupid, $queryid)
 	{
 		if($row = $result->fetch_assoc())
 		{
-			echo "get next 2\n";		
 			return intval($row["qid"]);
 		}
 		$i++;  	
 	}
-			echo "get next 3\n";	
 	return 0;
 }
 
@@ -328,7 +396,7 @@ function process_list_next($con, $user_body, $uiid)
 			{
 				$queryid = get_next_queryid($con, $groupid, $queryid);
 				$cmd .= ":" . $groupid . ":" . $queryid;
-				echo " cmd = " . $cmd . "\n";
+				//echo " cmd = " . $cmd . "\n";
 				return process_list_queries($con, $cmd, $uiid);
 			}			
 		}
@@ -340,7 +408,21 @@ function process_list_next($con, $user_body, $uiid)
 
 function process_following_group($con, $user_body, $uiid)
 {
-	return $responseMessage;
+	$groupid = intval(trim(substr($user_body, 3)));
+	if($groupid==0)
+		return "";
+	
+	$sql = "INSERT INTO bpgroupfollow ( uiid, groupid ) VALUES ('" . $uiid. "','".  $groupid . "' )";
+	if ( !mysqli_query($con,$sql) )
+	{
+		//echo("Error description: " . mysqli_error($con));
+		$responseMessage = "query create error: " . mysqli_error($con);
+	}
+	else
+	{
+		$responseMessage = "following group " . $groupid . " succeed.";
+	}
+	return $responseMessage;    
 }
 
 function process_following_query($con, $user_body, $uiid)

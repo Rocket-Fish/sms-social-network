@@ -24,7 +24,7 @@ function startsWith($haystack, $needle)
 
 
 	$stringData = file_get_contents("php://input");
-	echo $stringData . "\n";
+	//echo $stringData . "\n";
 
 	$splittedString = explode('&', $stringData);
 	$array = array_values($splittedString);
@@ -93,7 +93,7 @@ include("bpwelcome.php");
 
 	if ( strlen($responseMessage) == 0 )
 	{
-		echo "\n user_body = " . $user_body . "\n";
+		//echo "\n user_body = " . $user_body . "\n";
 		
 		if(startsWith($user_body, "lg:"))
 		{
@@ -139,7 +139,6 @@ include("bpwelcome.php");
 			}
 			else
 			{
-				
 				$responseMessage = "group '" . $groupName . "' created.";
 			}
 			$query = "";
@@ -190,7 +189,7 @@ include("dbbpclose.php");
 	if ( strlen($responseMessage) != 0 )
 	{
 		echo  "<Message>" . $responseMessage . "</Message>";
-		echo  "<query>" . $query . "</query>";
+		//echo  "<query>" . $query . "</query>";
 	}
 ?>
 </Response>
