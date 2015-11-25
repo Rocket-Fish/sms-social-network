@@ -2,26 +2,9 @@
 
 include("bpprocesses.php");
 
-/*
-function startsWith($haystack, $needle) 
-{
-	$neddle_len = strlen($neddle);
-	if($needle_len == 0)
-		return false;
-	echo "haystack=" . $haystack . "\n";
-	echo "needle_len=" . $needle_len . "\n";
-	echo "substr=" . $substr($haystack, 0, $needle_len ) . "\n";;
-	
-    return substr($haystack, 0, $needle_len ) == $neddle;
-}
-*/
-
 	header("content-type: text/xml");
 	error_reporting(E_ALL);
 	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-?>
-<?php
-
 
 	$stringData = file_get_contents("php://input");
 	//echo $stringData . "\n";
@@ -41,13 +24,6 @@ function startsWith($haystack, $needle)
 	
 	$responseMessage = "";
 
-//    [5] =>  FromZip    =
-//    [7] =>  FromState  =ON
-//    [9] =>  FromCity   =AJAX+PICKERING
-//    [11] => FromCountry=CA
-//    [17] => From       =%2B12899239409
-//    [10] => Body       =Vdbdbdbnfdh
-	
 	for($i = 0; $i < count($splittedString); $i ++) {
 	
 		list($name, $value) = explode("=", $array[$i]);
@@ -109,6 +85,7 @@ include("bpwelcome.php");
 		}
 		else if(startsWith($user_body, "lq:"))
 		{
+		    //echo "---lq\n";
 			$responseMessage = process_list_queries($con, $user_body, $uiid);
 		}
 		else if(startsWith($user_body, "la:"))

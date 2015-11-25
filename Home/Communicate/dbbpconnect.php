@@ -1,9 +1,26 @@
 <?php
 
-    $host_name  = "db602178330.db.1and1.com";
-    $database   = "db602178330";
-    $user_name  = "dbo602178330";
-    $password   = "breakpoverty";
+	$filename = "smssn.ini";
+	$fh = fopen($filename, 'r') or die("can't open file");
+	$config = fread($fh, filesize($filename));
+	fclose($fh);
+	
+	$splitted_String = explode('\n', $stringData);
+	$array_ = array_values($splitted_String);
+
+    $hostname  = "";
+    $database  = "";
+    $username  = "";
+    $password  = "";
+	
+	for($i = 0; $i < count($splittedString); $i ++) {
+		list($name, $value) = explode("=", $array[$i]);
+		
+		if($name=="hostname") 			$hostname 	 = $value;
+		else if($name=="database") 		$database 	 = $value;
+		else if($name=="username") 		$username 	 = $value;
+		else if($name=="password") 		$password 	 = $value;
+	}
 
 //	mysql_connect($host_name,$user_name,$password);
 //	@mysql_select_db($database); //or die( "Unable to select database");

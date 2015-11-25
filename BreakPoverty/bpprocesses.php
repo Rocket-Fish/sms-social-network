@@ -8,6 +8,8 @@ function startsWith($haystack, $needle) {
 
 function sendMessage($phone, $text)
 {
+	if(substr($phone, 0,1)=="+")
+	{
 	// Install the library via PEAR or download the .zip file to your project folder.
 	// This line loads the library
 	require '../Twilio-Server/Services/Twilio.php';
@@ -21,6 +23,7 @@ function sendMessage($phone, $text)
   		$phone, //'12899239409', // Text this number
   		$text //"Hello RECEIVER!"
 	);
+	}
 
 //echo '<h2> Sending Messages with Twilio </h2>';
 //print $message->sid;
@@ -165,7 +168,10 @@ function process_answer($con, $user_body, $uiid)
 					if($row = $result->fetch_assoc())
 					{
 						$phone = $row["phone"];
-						echo " phone of queryer = " . $phone . "\n";
+						//echo " phone of queryer = " . $phone . "\n";
+
+						sendMessage($phone, $content); 
+
 					}
 					$i++;  	
 				}
@@ -188,15 +194,13 @@ function process_answer($con, $user_body, $uiid)
 					{
 						$phone = $row["phone"];
 						//echo " phone of group = " . $phone . "\n";
+						sendMessage($phone, $content); 
 					}
 					$i++;
 				}
 				//////
 				
 				//function sendMessage($phone, $text)
-
-				
-				
 			}
 			return $responseMessage;
 }
