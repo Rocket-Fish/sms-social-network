@@ -3,9 +3,8 @@
 
 include("dbbpconnect.php");
 
-
+/*
 	$query=
-		
 		"create table bpgroupfollow ("
 		."id int(6) NOT NULL auto_increment,"
 		."uiid int(6) NOT NULL,"
@@ -18,13 +17,10 @@ include("dbbpconnect.php");
 	{
 		echo "\nError description: " . mysqli_error($con) . "\n" ;
 	}
-	
-	/*
+*/	
 
-
-
-	mysqli_query($con, "drop table bpquerys");
-	mysqli_query($con, "drop table bpanswers");
+//	mysqli_query($con, "drop table bpquerys");
+//	mysqli_query($con, "drop table bpanswers");
 	
 	$query=
 		
@@ -59,15 +55,10 @@ include("dbbpconnect.php");
 	{
 		echo "\nError description: " . mysqli_error($con) . "\n";
 	}
-	*/
+	
 	include("dbbpclose.php");
 
-?>
-
-	
-				
-	
-	
+/*	
 			create table bpquerys (
 		id int(6) NOT NULL auto_increment,
 		ownerid int(6) NOT NULL,
@@ -75,3 +66,9 @@ include("dbbpconnect.php");
 		content varchar(160) NOT NULL,
 		timewhen TIMESTAMP(8) NOT NULL,
 		PRIMARY KEY (id),UNIQUE id (id))
+		
+*/			
+?>
+
+	
+				

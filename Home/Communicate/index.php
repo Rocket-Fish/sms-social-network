@@ -42,7 +42,7 @@
 		<?php
 			error_reporting(E_ALL);
 
-			include("dbbpconnect.php");
+			include("../../db/dbbpconnect.php");
 
 //			$query = "select * from bpusers";
 			$query = "select id, ownerid, (select userid from bpusers b where b.id = a.ownerid) as owner,"
@@ -152,7 +152,7 @@
 			// Free result set
 			mysqli_free_result($result);
 			}
-			include("dbbpclose.php");
+			include("../../db/dbbpclose.php");
 		?>
 
 		<?php
@@ -193,7 +193,7 @@
 				}
 				
 				if($nameErr == "" &&  $phoneErr == "" && $typeErr == "") {
-				include("dbbpconnect.php");
+				include("../../db/dbbpconnect.php");
 				
 				$groupid = 1;
 				if($type == "education")
@@ -205,7 +205,7 @@
 				
 				insert_query($con, $phone, 1, $comment);
 
-				include("dbbpclose.php");
+				include("../../db/dbbpclose.php");
 				}
 			}
 

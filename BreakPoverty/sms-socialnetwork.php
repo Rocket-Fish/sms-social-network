@@ -1,11 +1,10 @@
 <?php
 
-include("../db/smssndbconn.php");
+include("db/smssndbconn.php");
 include("bpprocesses.php");
 
-	header("content-type: text/xml");
+	// header("content-type: text/html");
 	error_reporting(E_ALL);
-	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	$stringData = file_get_contents("php://input");
 	//echo $stringData . "\n";
@@ -26,6 +25,9 @@ include("bpprocesses.php");
 	$responseMessage = "";
 
 	for($i = 0; $i < count($splittedString); $i ++) {
+	
+		if( false == strpos($array[$i], "="))
+			continue;
 	
 		list($name, $value) = explode("=", $array[$i]);
 		
@@ -153,20 +155,10 @@ include("bpwelcome.php");
 	}
 	
 	
-	dbclose();
+	dbclose($con);
 	
 	$fh = fopen($myFile, 'a+') or die("can't open file");
 	fwrite($fh, "uiid=(".$uiid.") query=(".$query.")".PHP_EOL);
 	fclose($fh);	
 	
 ?>
-<Response>
-<?php
-
-	if ( strlen($responseMessage) != 0 )
-	{
-		echo  "<Message>" . $responseMessage . "</Message>";
-		//echo  "<query>" . $query . "</query>";
-	}
-?>
-</Response>
