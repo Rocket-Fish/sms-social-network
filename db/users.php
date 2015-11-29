@@ -2,13 +2,17 @@
 <body>
 <?php
 	error_reporting(E_ALL);
+	
 include("menu.php");
+include("smssndbconn.php");
+
+	add_menu("../");
+	
 ?>
 <br><br>
 <center>
 <?php
 
-include("db/smssndbconn.php");
 
 	$con = dbopen();
 
