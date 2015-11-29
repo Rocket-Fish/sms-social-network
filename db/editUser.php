@@ -3,10 +3,11 @@
 <?php
 	error_reporting(E_ALL);
 
-include("db/smssndbconn.php");
+include("smssndbconn.php");
 include("menu.php");
 include("util.php");
 
+	add_menu("../");
 
 
 	$array = getRequests();

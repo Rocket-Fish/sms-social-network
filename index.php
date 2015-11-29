@@ -1,22 +1,9 @@
 <html>
 <body>
-<?php
-
-include("menu.php");
-
-include("BreakPoverty/sms-socialnetwork.php");
-
+<?php 
+	include("db/menu.php"); 
+	add_menu("");
 ?>
-<?php
-/*
-	if ( strlen($responseMessage) != 0 )
-	{
-		echo  "<p>" . $responseMessage . "</p>";
-		//echo  "<query>" . $query . "</query>";
-	}
-*/	
-?>
-
 <br><br>
 <center>
 	<table>
