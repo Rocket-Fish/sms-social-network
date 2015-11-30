@@ -65,7 +65,8 @@ include("smssndbconn.php");
 	<td><?php echo $row["currgroupid"] ?></td>
 	<td><?php echo $row["currqueryid"] ?></td>
 	<td><?php echo $row["curranswerid"] ?></td>
-	<td><a href="editUser.php?id=<?php echo $row["id"] ?>">Edit</a></td>
+	<td><a href="userEdit.php?id=<?php echo $row["id"] ?>"> Edit </a></td>
+	<td><a href="groupEdit.php?ownerid=<?php echo $row["id"] ?>"> Create Group </a></td>
 </tr>		
 <?php	
 		  //$i++;  	
