@@ -30,7 +30,7 @@ include("smssndbconn.php");
     //exit;
     
 ?><table border=1>	
-<caption>Table USERS</caption>
+<caption>Table GROUPS</caption>
 <tr>
 <td>
 	id </td><td>

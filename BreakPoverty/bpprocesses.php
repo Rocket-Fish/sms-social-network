@@ -434,6 +434,75 @@ function process_following_query($con, $user_body, $uiid)
 	return $responseMessage;
 }
 
-
+function process_create_group($con, $uiid, $groupName, $description)
+{
+	$name = trim($groupName);
+	if(strlen($name) == 0)
+		return "Can not create a group without name.";
+	
+	$id = 0;
+	$ownerid = 0;
+	
+	{  // check if the group already exist
+		$query = "select id, ownerid, name, comment from bpgroups where name=" . $name;
+		
+		if (($result=mysqli_query($con,$query)))
+		{
+			while($row = $result->fetch_assoc()) 
+			{
+				$id =  $row["id"];
+				$ownerid = $row["ownerid"];
+				$existComment = $row["comment"];
+				break;
+			}
+			mysqli_free_result($result);
+		}	
+	}
+	
+	if($id!=0)
+	{
+		if($ownerid!=$uiid)
+		{
+			return "Same name group already exist";
+		}
+		else
+		{  // update group
+			$sql = "UPDATE bpgroups set "
+				.  " name='".$name."',"
+				.  " comment='".$comment."',"
+				.  " where id=".$id
+				;
+				
+			//echo "<br>sql = [".$sql."]<br>";
+			
+			if ( !mysqli_query($con,$sql) )
+			{
+				return "Error in updating group '" . $name. "': ". mysqli_error($con);
+			}
+			else
+			{
+				return "Successfully updated group '" . $name . "'.";
+			}
+		}
+	}
+	else // id == 0
+	{  // insert a new group
+		$sql = "INSERT into bpgroups (ownerid, name, comment ) values( " 
+			. $uiid . ",'".  $name ."','".$description."')";
+			
+		//echo "<br>sql = [".$sql."]<br>";
+		
+		if ( !mysqli_query($con,$sql) )
+		{
+			return "Error in creating group '" . $name. "': ". mysqli_error($con);
+		}
+		else
+		{
+			return "Successfully created group '" . $name . "'.";
+		}
+	}
+	
+	return "Unknown error.";
+}
 
 ?>
