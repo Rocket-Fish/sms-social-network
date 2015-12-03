@@ -72,50 +72,33 @@ function process_group($con)
 	return $responseMessage;
 }
 
-function process_query($con, $user_body, $uiid)
+function process_query($con, $uiid, $groupname, $description)
 {
-	$subbody = trim(substr($user_body, 6));
-	$pos = strpos($subbody, ":");
-
-	// Note our use of ===.  Simply == would not work as expected
-	// because the position of 'a' was the 0th (first) character.
-	if ($pos === false) {
-		$groupid=0;
-		$content = $subbody;
-	} 
-	else 
-	{
-		$groupname=substr($subbody, 0, $pos);
-		$content = substr($subbody, $pos+1);
-		
-		$groupid = intval($groupname); 
-		if($groupid==0)
-		{
-			$sql = "select id from bpgroups where name='" . $groupname . "'";
-			
-			if ($result=mysqli_query($con,$sql))
-			{
-				if ($result->num_rows > 0) 
-				{
-					if($row = $result->fetch_assoc()) 
-					{
-						$groupid = $row["id"];
-					}
-				}
-			}	
-			mysqli_free_result($result);
-		}
-	}			
+	$groupid = getGroupId($con, $groupname); 
 	
-	$sql = "INSERT INTO bpquerys ( ownerid, groupid, content ) VALUES ('" . $uiid. "','".  $groupid . "','".  $content. "' )";
+	if($groupid==0)
+	{
+		return "Failed in inserting query: group [".$groupname."] not found.";
+	}
+	if($uiid==0)
+	{
+		return "Failed in inserting query: unknown user id [".$uiid."].";
+	}
+	if(strlen($description)==0)
+	{
+		return "Failed in inserting query: empty description.";
+	}
+	
+	$sql = "INSERT INTO bpquerys ( ownerid, groupid, content ) VALUES "
+			."('" . $uiid. "','".  $groupid . "','".  $description. "' )";
 	if ( !mysqli_query($con,$sql) )
 	{
 		//echo("Error description: " . mysqli_error($con));
-		$responseMessage = "query create error: " . mysqli_error($con);
+		$responseMessage = "Query create error: " . mysqli_error($con);
 	}
 	else
 	{
-		$responseMessage = "query " .  mysqli_insert_id($con) . " created.";
+		$responseMessage = "Query [" .  mysqli_insert_id($con) . "] created in group [".$groupid."].";
 	}
 	return $responseMessage;
 }
