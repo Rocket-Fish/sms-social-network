@@ -47,11 +47,11 @@ include("../BreakPoverty/bpprocesses.php");
 		{
 			$responseMessage = process_query($con, $uiid, $ref, $content);
 		}
-		/*
-		else if(startsWith($user_body, "ans:"))
+		else if($cmd == "ans")
 		{
-			$responseMessage = process_answer($con, $user_body, $uiid);
+			$responseMessage = process_answer($con, $uiid, $ref, $content);
 		}
+		/*
 		else if(startsWith($user_body, "lq:"))
 		{
 		    //echo "---lq\n";
@@ -140,7 +140,7 @@ include("../BreakPoverty/bpprocesses.php");
 		<td></td>
 	</tr>
 	<tr>
-		<td>message:</td><td><input type="text" name="message" value=""></td>
+		<td>message:</td><td><input type="text" name="message" value="" maxlength="160" size="100"></td>
 	</tr>
 	<tr>
 		<td><input type="hidden" name="id" value="<?php echo $uiid ?>"></td>
