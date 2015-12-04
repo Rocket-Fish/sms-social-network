@@ -120,89 +120,79 @@ function process_query($con, $user_body, $uiid)
 	return $responseMessage;
 }
 
-function process_answer($con, $user_body, $uiid)
+function process_answer($con, $uiid, $ref, $content)
 {
-			$subbody = trim(substr($user_body, 4));
-			
-			$pos = strpos($subbody, ":");
+	$queryid=$ref;
+	if($queryid=="" || $queryid==0)
+	{
+		return "Please specilfy query number as @query number@: e.g. @123@ ";
+	}
+	
+	$sql = "INSERT INTO bpanswers ( ownerid, queryid, content ) VALUES "
+			. "('" . $uiid. "','".  $queryid . "','".  $content. "' )";
+	if ( !mysqli_query($con,$sql) )
+	{
+		return "answer create error: " . mysqli_error($con);
+	}
+	
+	$responseMessage = "answer created.";
+	
+	/*
+	////// post message to questioner ////
+	$sql = "select phone from bpusers where id in (SELECT ownerid from bpquerys where id=" 
+		. $queryid . ") ";
 
-			// Note our use of ===.  Simply == would not work as expected
-			// because the position of 'a' was the 0th (first) character.
-			if ($pos === false) {
-				$queryid=-1;
-				$content = $subbody;
-			} 
-			else 
-			{
-				$queryid=substr($subbody, 0, $pos);
-				$content = substr($subbody, $pos+1);
-			}			
-			
-			$sql = "INSERT INTO bpanswers ( ownerid, queryid, content ) VALUES ('" . $uiid. "','".  $queryid . "','".  $content. "' )";
-			if ( !mysqli_query($con,$sql) )
-			{
-				//echo("Error description: " . mysqli_error($con));
-				$responseMessage = "answer create error: " . mysqli_error($con);
-			}
-			else
-			{
-				$responseMessage = "answer created.";
-				
-				
-				
-				//////
-				$sql = "select phone from bpusers where id in (SELECT ownerid from bpquerys where id=" 
-					. $queryid . ") ";
-	
-				if (!($result=mysqli_query($con,$sql)))
-				{
-					echo "Error description: " . mysqli_error($con) ;
-				}	
-	
-				$num = mysqli_num_rows($result);
-				$i=0;
-				$phone = "";
-	
-				while ($i < $num) 
-				{
-					if($row = $result->fetch_assoc())
-					{
-						$phone = $row["phone"];
-						//echo " phone of queryer = " . $phone . "\n";
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
 
-						sendMessage($phone, $content); 
+	$num = mysqli_num_rows($result);
+	$i=0;
+	$phone = "";
 
-					}
-					$i++;  	
-				}
-				//////
-				$sql = "select phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid in "
-				       . " ( select groupid from bpquerys where id=" . $queryid . " ) )" ;
+	while ($i < $num) 
+	{
+		if($row = $result->fetch_assoc())
+		{
+			$phone = $row["phone"];
+			//echo " phone of queryer = " . $phone . "\n";
+
+			sendMessage($phone, $content); 
+
+		}
+		$i++;  	
+	}
+	////// post message to group followers ////
 	
-				if (!($result=mysqli_query($con,$sql)))
-				{
-					echo "Error description: " . mysqli_error($con) ;
-				}	
+	$sql = "select phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid in "
+		   . " ( select groupid from bpquerys where id=" . $queryid . " ) )" ;
+
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+
+	$num = mysqli_num_rows($result);
+	$i=0;
+	$phone = "";
+
+	while ($i < $num) 
+	{
+		if($row = $result->fetch_assoc())
+		{
+			$phone = $row["phone"];
+			//echo " phone of group = " . $phone . "\n";
+			sendMessage($phone, $content); 
+		}
+		$i++;
+	}
+	//////
 	
-				$num = mysqli_num_rows($result);
-				$i=0;
-				$phone = "";
+	//function sendMessage($phone, $text)
+	*/
 	
-				while ($i < $num) 
-				{
-					if($row = $result->fetch_assoc())
-					{
-						$phone = $row["phone"];
-						//echo " phone of group = " . $phone . "\n";
-						sendMessage($phone, $content); 
-					}
-					$i++;
-				}
-				//////
-				
-				//function sendMessage($phone, $text)
-			}
-			return $responseMessage;
+	return $responseMessage;
 }
 
 function find_group_id($con, $groupname)
