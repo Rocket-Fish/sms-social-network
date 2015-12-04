@@ -3,11 +3,20 @@
 
 <?php
 	error_reporting(E_ALL);
-	include("dbbpconnect.php");
+	
+include("smssndbconn.php");
+include("menu.php");
 
+	add_menu("../");
 
+	$con = dbopen();
+	
+?>
+<center><table><tr><td>
+<?php	
+	
 //////////////////////////////////
-	echo "groups: \n";
+	echo "Groups: \n";
 
 	$query = "select * from bpgroups";
 	
@@ -120,24 +129,33 @@
 	
 //////////////////////////////////////////////////
 	
-	$query = "select * from bpquerys";
+	$query = "select id, ownerid, "
+		." (select userid from bpusers u where u.id=q.ownerid) as owner,"
+		."groupid, "
+		." (select name from bpgroups g where g.id=q.groupid) as groupname,"
+		."content, timewhen from bpquerys q";
 	
 	if (!($result=mysqli_query($con,$query)))
 	{
+		echo "sql=[".$query."]";
 		echo "Error description: " . mysqli_error($con) ;
 	}	
 	
 	$num=mysqli_num_rows($result);
 
-    echo "<br> number of records = ". $num;
     
     $i=0;
-?><table border=1>	
+?>
+<br><br>
+<table border=1>	
+<caption>Queries</caption>
 <tr>
 <td>
 	id </td><td>
 	ownerid </td><td>
+	owner </td><td>
 	groupid </td><td>
+	group </td><td>
 	content </td><td>
 	timewhen </td><td>
 </td>
@@ -150,7 +168,9 @@
 ?>	
 <tr><td><?php echo $row["id"]; ?>
 </td><td><?php echo $row["ownerid"]; ?>
+</td><td><?php echo $row["owner"]; ?>
 </td><td><?php echo $row["groupid"]; ?>
+</td><td><?php echo $row["groupname"]; ?>
 </td><td><?php echo $row["content"]; ?>
 </td><td><?php echo $row["timewhen"]; ?>
 </td></tr>		
@@ -161,6 +181,9 @@
 		echo "0 results";
 	}
 ?>
+<tr><td colspan=7>
+<?php    echo "Total number of records: ". $num; ?>
+</td></tr>
 </table>
 <?php	
 
@@ -216,32 +239,12 @@
 	// Free result set
 	mysqli_free_result($result);
 	
-	include("dbbpclose.php");
-
-   
-//echo "<br><br>============================<br>";
-/*    
-$txt1 = "Learn PHP";
-$txt2 = "W3Schools.com";
-$x = 5;
-$y = 4;
-
-echo "<h2>$txt1</h2>";
-echo "Study PHP at $txt2<br>";
-
-echo $x + $y;
-
-echo "num=[";  
-echo $num ;
-echo "]";
-    
-echo "<br><br>============================<br>";
-*/    
-
+	dbclose($con);
 ?>
 
 <br>
 end    
+</td></tr></table></center>
 
 </html>
 </body>  

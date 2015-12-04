@@ -43,12 +43,10 @@ include("../BreakPoverty/bpprocesses.php");
 		{
 			///$responseMessage = process_group($con);
 		}
-		/*
-		else if(startsWith($user_body, "query:"))
+		else if($cmd == "query")
 		{
-			$responseMessage = process_query($con, $user_body, $uiid);
+			$responseMessage = process_query($con, $uiid, $ref, $content);
 		}
-		*/
 		else if($cmd == "ans")
 		{
 			$responseMessage = process_answer($con, $uiid, $ref, $content);
