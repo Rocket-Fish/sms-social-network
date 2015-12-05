@@ -34,41 +34,8 @@ function sendMessage($phone, $text)
 
 function process_group($con)
 {
-	$sql = "SELECT id, name, type, comment FROM bpgroups";
+	//$sql = "SELECT id, name, type, comment FROM bpgroups";
 	
-	if (!($result=mysqli_query($con,$sql)))
-	{
-		echo "Error description: " . mysqli_error($con) ;
-	}	
-	
-	$num = mysqli_num_rows($result);
-	$i=0;
-	$id = -1;
-	$name = "";
-	$type = -1;
-	$comment = "";
-	
-//$responseMessage = "Which of the following will you like to check. send 'group:groupname' to see detail: ";
-	$responseMessage = "";
-
-	while ($i < $num) 
-	{
-		
-		if($row = $result->fetch_assoc())
-		{
-			$id = $row["id"];
-			$name = $row["name"];
-			$type = $row["type"];
-			$comment = $row["comment"];
-			
-			if($i!=0)
-				$responseMessage .= ", ";
-			
-			$responseMessage .= $id . " (" . $name . ")";
-		}
-		
-		$i++;  	
-	}
 	return $responseMessage;
 }
 
@@ -213,34 +180,17 @@ function process_save_last_query($con, $cmd, $groupid, $queryid, $answerid, $uii
 	}
 }
 
-function process_list_queries($con, $user_body, $uiid)
+function process_list_queries($con, $uiid, $groupname, $content)
 {
-	$subbody = trim(substr($user_body, 3));
-	$pos = strpos($subbody, ":");
-
     $groupid = 0;
-    $queryid = 0;
-    
-	if ($pos === false) {
-		$groupid = $subbody;
-		$queryid = 0;
-	} 
-	else 
-	{
-		$groupname=substr($subbody, 0, $pos);
-		$queryid = intval(substr($subbody, $pos+1));
-		if(strlen($groupname))
-		{
-			$groupid = intval($groupname); 
-			
-			if($groupid==0)
-			{
-				$groupid = find_group_id($con, $groupname);
-			}
-		}
-	}
+	$queryid = 0;
+	if(strlen($content)!=0)
+		$queryid = intval($content); 
 
-	process_save_last_query($con, "lq", $groupid, $queryid, 0, $uiid);
+	//echo "process_list_queries queryid=[" .$queryid."] content=[".$content."]";
+	
+ 	$groupid = getGroupId($con, $groupname); 
+
 	
 	$sql = "SELECT id, ownerid, groupid, content FROM bpquerys";
 	if($queryid>0)
@@ -256,40 +206,78 @@ function process_list_queries($con, $user_body, $uiid)
 		echo "Error description: " . mysqli_error($con) ;
 	}	
 	
-	$num = mysqli_num_rows($result);
-	$i=0;
+	//$num = mysqli_num_rows($result);
 	$id = 0;
 	$ownerid = 0;
-	$groupid = 0;
+	//$groupid = 0;
 	$content = "";
 	
-	$responseMessage = "";
-
     //echo "query = [" . $sql . "]\n";				
-    //echo "num = [" . $num . "]\n";				
+    //echo "num = [" . $num . "]\n";
 	
-	while ($i < $num) 
+	while($row = $result->fetch_assoc()) 
 	{
-		if($row = $result->fetch_assoc())
-		{
-			$id = $row["id"];
-			$ownerid = $row["ownerid"];
-			$groupid = $row["groupid"];
-			$content = $row["content"];
+		$id = $row["id"];
+		$ownerid = $row["ownerid"];
+		//$groupid = $row["groupid"];
+		$content = $row["content"];
 
-			//echo "id = [" . $id . "] content = [" . $content . "]\n";
+		//echo "id = [" . $id . "] content = [" . $content . "]\n";
 			
-			$responseMessage = $id . ": " . $content;
-			return $responseMessage;
-		}
-		$i++;  	
+		$queryid = $id;
+		process_save_last_query($con, "lq", $groupid, $queryid, 0, $uiid);
+			
+		$responseMessage = $id . ": " . $content;
+		return $responseMessage;
 	}
-	return $responseMessage;
+	
+	return "query not found.";
 }
 
-function process_list_answers($con, $user_body, $uiid)
+function process_list_answers($con, $uiid, $queryid1, $queryid2, $aid)
 {
-	return $responseMessage;
+	$queryid = 0;
+	if(strlen($queryid1))
+		$queryid = intval($queryid1); 
+		
+		
+	if($queryid == 0)
+		if(strlen($queryid2)!=0)
+			$queryid = intval($queryid2); 
+		
+	if($queryid == 0)
+	{
+		return "Please input query id";
+	}
+
+	$sql = "SELECT id, content FROM bpanswers ";
+	if($aid>0)
+		$sql .= "where id=" . $aid .= " order by id desc ";
+	else
+		$sql .= "where queryid=" . $queryid . " order by id desc ";
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+	    echo " sql=". $sql;
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	$id = 0;
+	$answerid = 0;
+	$content = "";
+	
+	while($row = $result->fetch_assoc()) 
+	{
+		$id = $row["id"];
+		$content = $row["content"];
+
+		//echo "id = [" . $id . "] content = [" . $content . "]\n";
+		$answerid = $id;
+		process_save_last_query($con, "la", 0, $queryid, $answerid, $uiid);
+			
+		return  $id . ": " . $content;
+	}
+	return "answer not found for query [".$queryid."]";
 }
 
 function get_next_queryid($con, $groupid, $queryid)
@@ -298,51 +286,86 @@ function get_next_queryid($con, $groupid, $queryid)
 	if($groupid!=0)
 	    $sql .= " and groupid=". $groupid ;
 	
+	//echo "sql 1 = [".$sql."]<br>";
+	
 	if (!($result=mysqli_query($con,$sql)))
 	{
 		echo "Error description: " . mysqli_error($con) ;
 	}	
 	
-	$num = mysqli_num_rows($result);
-	$i=0;
-	$qid = 0;
-	
-	while ($i < $num) 
+	if($row = $result->fetch_assoc())
 	{
-		if($row = $result->fetch_assoc())
+		$qid = intval($row["qid"]);
+		if($qid>0)
 		{
-			$qid = intval($row["qid"]);
-			if($qid>0)
-				return $qid;	
+			//echo "get_next_queryid 1 returns [".$qid."]";
+			return $qid;	
 		}
-		$i++;
 	}
 
 	$sql = "SELECT max(id) as qid from bpquerys "; 
 	if($groupid!=0)
 	    $sql .= " where groupid=". $groupid ;
 	
+	//echo "sql 2 = [".$sql."]<br>";
 	if (!($result=mysqli_query($con,$sql)))
 	{
 		echo "Error description: " . mysqli_error($con) ;
 	}	
 	
-	$num = mysqli_num_rows($result);
-	$i=0;
-	$qid = 0;
-	
-	while ($i < $num) 
+	if($row = $result->fetch_assoc())
 	{
-		if($row = $result->fetch_assoc())
-		{
-			return intval($row["qid"]);
-		}
-		$i++;  	
+		//echo "get_next_queryid 1 returns [".intval($row["qid"])."]";
+		return intval($row["qid"]);
 	}
+	
+	//echo "get_next_queryid fail.<br>";
 	return 0;
 }
 
-function process_list_next($con, $user_body, $uiid)
+function get_next_answerid($con, $queryid, $answerid)
+{
+	if($queryid==0)
+		return 0;
+	
+	$sql = "SELECT max(id) as aid from bpanswers where id< ". $answerid .= " and queryid=". $queryid ;
+	
+	//echo "sql 1 = [".$sql."]<br>";
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	if($row = $result->fetch_assoc())
+	{
+		$aid = intval($row["aid"]);
+		if($aid>0)
+		{
+			//echo "get_next_queryid 1 returns [".$qid."]";
+			return $aid;	
+		}
+	}
+
+	$sql = "SELECT max(id) as aid from bpanswers where queryid=". $queryid ;
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "get_next_answerid 2 = [".$sql."]<br>";
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	if($row = $result->fetch_assoc())
+	{
+		//echo "get_next_queryid 1 returns [".intval($row["qid"])."]";
+		return intval($row["aid"]);
+	}
+	
+	//echo "get_next_queryid fail.<br>";
+	return 0;
+}
+
+function process_list_next($con, $uiid)
 {
 	$sql = "SELECT currcmd, currgroupid, currqueryid, curranswerid FROM bpusers where id=".$uiid;
 	
@@ -351,8 +374,6 @@ function process_list_next($con, $user_body, $uiid)
 		echo "Error description: " . mysqli_error($con) ;
 	}	
 	
-	$num = mysqli_num_rows($result);	
-	$i=0;
 	$cmd = "";
 	$groupid = 0;
 	$queryid = 0;
@@ -360,24 +381,25 @@ function process_list_next($con, $user_body, $uiid)
 	
 	$responseMessage = "";
 
-	while ($i < $num) 
+	if($row = $result->fetch_assoc())
 	{
-		if($row = $result->fetch_assoc())
+		$groupid = $row["currgroupid"];
+		$queryid = $row["currqueryid"];
+		$answerid = $row["curranswerid"];
+		$cmd = $row["currcmd"];
+		
+		if ( $cmd == "lq")
 		{
-			$groupid = $row["currgroupid"];
-			$queryid = $row["currqueryid"];
-			$answerid = $row["curranswerid"];
-			$cmd = $row["currcmd"];
-			
-			if ( $cmd == "lq")
-			{
-				$queryid = get_next_queryid($con, $groupid, $queryid);
-				$cmd .= ":" . $groupid . ":" . $queryid;
-				//echo " cmd = " . $cmd . "\n";
-				return process_list_queries($con, $cmd, $uiid);
-			}			
-		}
-		$i++;  	
+			$queryid = get_next_queryid($con, $groupid, $queryid);
+			//echo "queryid = [".$queryid."]<br>";
+			return process_list_queries($con, $uiid, $groupid, $queryid);
+		}			
+		else if ( $cmd == "la")
+		{
+			$answerid = get_next_answerid($con, $queryid, $answerid);
+			//echo "queryid = [".$queryid."]<br>";
+			return process_list_answers($con, $uiid, $queryid, $queryid, $answerid);
+		}			
 	}
 
 	return $responseMessage;
