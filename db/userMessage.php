@@ -41,7 +41,7 @@ include("../BreakPoverty/bpprocesses.php");
 		
 		if($cmd == "lg") // list groups
 		{
-			$responseMessage = process_group($con);
+			$responseMessage = process_list_groups($con, $uiid,0);
 		}
 		else if($cmd == "query")
 		{
