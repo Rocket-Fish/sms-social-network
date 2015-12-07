@@ -32,11 +32,49 @@ function sendMessage($phone, $text)
 
 
 
-function process_group($con)
+function process_list_groups($con,$uiid, $groupid)
 {
 	//$sql = "SELECT id, name, type, comment FROM bpgroups";
+ 
+//	if(strlen($content)!=0)
+//		$queryid = intval($content); 
+
+	//echo "process_list_queries queryid=[" .$queryid."] content=[".$content."]";
 	
-	return $responseMessage;
+	$sql = "SELECT id, name FROM bpgroups";
+	
+	if ($groupid != 0)
+		$sql .= " where id=". $groupid;
+	
+	$sql .= " order by id desc "; //"fetch first 1 rows only";
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+	    echo " sql=". $sql;
+		echo "Error description: " . mysqli_error($con) ;
+	}
+	
+	//$num = mysqli_num_rows($result);
+	$id = 0;
+	//$groupid = 0;
+	
+    //echo "query = [" . $sql . "]\n";				
+    //echo "num = [" . $num . "]\n";
+	
+	while($row = $result->fetch_assoc()) 
+	{
+		$id = $row["id"];
+		$name = $row["name"];
+
+//		process_save_last_query($con, "lg", $groupid, $queryid, 0, $uiid);
+		process_save_last_query($con, "lg", $id, 0, 0, $uiid);
+//		$responseMessage = $id . ": " . $content;
+		$responseMessage = $id . ": " .$name;
+		return $responseMessage;
+	}
+	
+	return "group not found.";	
+
 }
 
 function process_query($con, $uiid, $groupname, $description)
@@ -365,6 +403,46 @@ function get_next_answerid($con, $queryid, $answerid)
 	return 0;
 }
 
+function get_next_groupid($con, $groupid)
+{
+	
+	$sql = "SELECT max(id) as gid from bpgroups where id< ". $groupid;
+	
+	//echo "sql 1 = [".$sql."]<br>";
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	if($row = $result->fetch_assoc())
+	{
+		$gid = intval($row["gid"]);
+		if($gid>0)
+		{
+			//echo "get_next_queryid 1 returns [".$qid."]";
+			return $gid;	
+		}
+	}
+
+	$sql = "SELECT max(id) as gid from bpgroups";
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+//		echo "get_next_answerid 2 = [".$sql."]<br>";
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	if($row = $result->fetch_assoc())
+	{
+		//echo "get_next_queryid 1 returns [".intval($row["qid"])."]";
+		return intval($row["gid"]);
+	}
+	
+	//echo "get_next_queryid fail.<br>";
+	return 0;
+}
+
 function process_list_next($con, $uiid)
 {
 	$sql = "SELECT currcmd, currgroupid, currqueryid, curranswerid FROM bpusers where id=".$uiid;
@@ -399,7 +477,13 @@ function process_list_next($con, $uiid)
 			$answerid = get_next_answerid($con, $queryid, $answerid);
 			//echo "queryid = [".$queryid."]<br>";
 			return process_list_answers($con, $uiid, $queryid, $queryid, $answerid);
-		}			
+		}	
+		else if ( $cmd == "lg")
+		{
+			$groupid = get_next_groupid($con, $groupid);
+			//echo "queryid = [".$queryid."]<br>";
+			return process_list_groups($con, $uiid, $groupid);	
+		}	
 	}
 
 	return $responseMessage;
