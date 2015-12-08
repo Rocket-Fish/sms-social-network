@@ -65,11 +65,11 @@ include("../BreakPoverty/bpprocesses.php");
 		}
 		else if($cmd == "fg")
 		{
-			$responseMessage = process_following_group($con, $uiid, $ref, $content);
+			$responseMessage = process_following_group($con, $uiid, $ref);
 		}
 		else if($cmd == "fq")
 		{
-			$responseMessage = process_following_query($con, $uiid, $ref, $content);
+			$responseMessage = process_following_query($con, $uiid, $ref);
 		}
 		else if($cmd == "cg") // create group
 		{

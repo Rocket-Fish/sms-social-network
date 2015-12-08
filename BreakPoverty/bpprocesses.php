@@ -530,11 +530,45 @@ function process_following_group($con, $uiid, $groupname)
 	return $responseMessage;    
 }
 
-function process_following_query($con, $user_body, $uiid)
+function process_following_query($con, $uiid, $queryid)
 {
-	return $responseMessage;
-}
+	if($queryid==0)
+	{
+		return "Please input query id.";
+	}
+		$sql = "SELECT id FROM bpqueryfollow where uiid=".$uiid ." and queryid=". $queryid ;
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	$id = 0;
+	
+	$responseMessage = "";
 
+	if($row = $result->fetch_assoc())
+	{
+		$id = $row["id"];
+	}
+	
+	if($id>0)
+	{
+		return "You have already followed the query.";
+	}
+	
+	$sql = "INSERT INTO bpqueryfollow ( uiid, queryid ) VALUES ('" . $uiid. "','".  $queryid . "' )";
+	if ( !mysqli_query($con,$sql) )
+	{
+		//echo("Error description: " . mysqli_error($con));
+		$responseMessage = "error in follow  a query: " . mysqli_error($con);
+	}
+	else
+	{
+		$responseMessage = "following query " . $queryid . " succeed.";
+	}
+	return $responseMessage;    
+}
 function process_create_group($con, $uiid, $groupName, $description)
 {
 	$name = trim($groupName);

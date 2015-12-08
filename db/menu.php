@@ -23,6 +23,11 @@ function add_menu($prefix)
 		<td><a href="<?php echo $prefix ?>db/list_query.php">List</a></td>
 	</tr>
 	
+	<tr>
+		<td>Followers</td>
+		<td><a href="<?php echo $prefix ?>db/followerList.php">Group</a></td>
+	</tr>
+	
 	</table>
 <?php
 }
