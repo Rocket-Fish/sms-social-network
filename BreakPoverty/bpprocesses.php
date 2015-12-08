@@ -366,7 +366,7 @@ function get_next_answerid($con, $queryid, $answerid)
 	if($queryid==0)
 		return 0;
 	
-	$sql = "SELECT max(id) as aid from bpanswers where id< ". $answerid .= " and queryid=". $queryid ;
+	$sql = "SELECT max(id) as aid from bpanswers where id< ". $answerid . " and queryid=". $queryid ;
 	
 	//echo "sql 1 = [".$sql."]<br>";
 	
@@ -489,17 +489,39 @@ function process_list_next($con, $uiid)
 	return $responseMessage;
 }
 
-function process_following_group($con, $user_body, $uiid)
+function process_following_group($con, $uiid, $groupname)
 {
-	$groupid = intval(trim(substr($user_body, 3)));
+	$groupid = getGroupId($con, $groupname); 
 	if($groupid==0)
-		return "";
+	{
+		return "Please input group name.";
+	}
+		$sql = "SELECT id FROM bpgroupfollow where uiid=".$uiid ." and groupid=". $groupid ;
+	
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+	
+	$id = 0;
+	
+	$responseMessage = "";
+
+	if($row = $result->fetch_assoc())
+	{
+		$id = $row["id"];
+	}
+	
+	if($id>0)
+	{
+		return "You have already followed the group.";
+	}
 	
 	$sql = "INSERT INTO bpgroupfollow ( uiid, groupid ) VALUES ('" . $uiid. "','".  $groupid . "' )";
 	if ( !mysqli_query($con,$sql) )
 	{
 		//echo("Error description: " . mysqli_error($con));
-		$responseMessage = "query create error: " . mysqli_error($con);
+		$responseMessage = "error in follow  a group: " . mysqli_error($con);
 	}
 	else
 	{

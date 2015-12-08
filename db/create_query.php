@@ -1,7 +1,22 @@
 <?php
 	error_reporting(E_ALL);
 
-include("dbbpconnect.php");
+include("smssndbconn.php");
+		$con = dbopen();
+
+	$query=
+		"create table bpqueryfollow ("
+		."id int(6) NOT NULL auto_increment,"
+		."uiid int(6) NOT NULL,"
+		."queryid int(6),"
+		."timewhen TIMESTAMP NOT NULL,"
+		."PRIMARY KEY (id),UNIQUE id (id))"
+		;
+
+	if (!mysqli_query($con, $query))
+	{
+		echo "\nError description: " . mysqli_error($con) . "\n" ;
+	}
 
 /*
 	$query=
@@ -18,7 +33,7 @@ include("dbbpconnect.php");
 		echo "\nError description: " . mysqli_error($con) . "\n" ;
 	}
 */	
-
+/*
 //	mysqli_query($con, "drop table bpquerys");
 //	mysqli_query($con, "drop table bpanswers");
 	
@@ -55,8 +70,9 @@ include("dbbpconnect.php");
 	{
 		echo "\nError description: " . mysqli_error($con) . "\n";
 	}
+	*/
 	
-	include("dbbpclose.php");
+		dbclose($con);
 
 /*	
 			create table bpquerys (
