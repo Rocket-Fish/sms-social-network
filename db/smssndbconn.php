@@ -8,7 +8,11 @@ function dbclose($con)
 function dbopen()
 {
 	$filename = "smssn.ini";
+	if( !file_exists ( $filename ))
+		$filename = "../smssn.ini";
+		
 	$fh = fopen($filename, 'r') or die("can't open file");
+	
 	$config = fread($fh, filesize($filename));
 	fclose($fh);
 	
@@ -37,13 +41,13 @@ function dbopen()
 		else if($name=="username") 		$username 	 = trim($value);
 		else if($name=="password") 		$password 	 = trim($value);
 	}
-/*	
-	echo 
-		" hostname = [" . $hostname . "] <br>" .
-		" database = [" . $database . "] <br>" .
-		" username = [" . $username . "] <br>" .
-		" password = [" . $password . "] <br>" ;
-*/	
+	
+//	echo 
+//		" hostname = [" . $hostname . "] <br>" .
+//		" database = [" . $database . "] <br>" .
+//		" username = [" . $username . "] <br>" .
+//		" password = [" . $password . "] <br>" ;
+	
 	$con=mysqli_connect($hostname,$username,$password,$database);
 	
 	if (mysqli_connect_errno())

@@ -77,6 +77,106 @@ function process_list_groups($con,$uiid, $groupid)
 
 }
 
+function getQuestioner($con, $queryid)	
+{
+	$sql = "select id, phone from bpusers where id in (SELECT ownerid from bpquerys where id="  . $queryid . ") ";
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+
+	$num = mysqli_num_rows($result);
+
+	$array = array(0=>"");
+	
+	while($row = $result->fetch_assoc())
+	{
+		$phone = $row["phone"];
+		$uiid = $row["id"];
+		//echo " phone of queryer = " . $phone . "\n";
+		//$array[$uiid] = $phone;
+		$array[$uiid] = $phone;
+	}
+		
+	return $array;
+}	
+
+function getQueryGroupFollowers($con, $queryid)
+{
+	$sql = "select id, phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid in "
+		   . " ( select groupid from bpquerys where id=" . $queryid . " ) )" ;
+
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+
+	$num = mysqli_num_rows($result);
+	$phone = "";
+
+	$array = array(0=>"");
+	
+	while($row = $result->fetch_assoc())
+	{
+		$phone = $row["phone"];
+		$uiid = $row["id"];
+		$array[$uiid] = $phone;
+		//echo " phone of group = " . $phone . "\n";
+	}
+	
+	return $array;
+}	
+
+function getGroupFollowers($con, $groupid)
+{
+	$sql = "select id, phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid =". $groupid . " )" ;
+
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+
+	$num = mysqli_num_rows($result);
+	$phone = "";
+
+	$array = array(0=>"");
+	
+	while($row = $result->fetch_assoc())
+	{
+		$phone = $row["phone"];
+		$uiid = $row["id"];
+		$array[$uiid] = $phone;
+		//echo " phone of group = " . $phone . "\n";
+	}
+	
+	return $array;
+}	
+
+function getQueryFollowers($con, $queryid)
+{
+	$sql = "select id, phone from bpusers where id in (SELECT uiid from bpqueryfollow where queryid= ".$queryid.")";
+
+	if (!($result=mysqli_query($con,$sql)))
+	{
+		echo "Error description: " . mysqli_error($con) ;
+	}	
+
+	$num = mysqli_num_rows($result);
+	$phone = "";
+
+	$array = array(0=>"");
+	
+	while($row = $result->fetch_assoc())
+	{
+		$phone = $row["phone"];
+		$uiid = $row["id"];
+		$array[$uiid] = $phone;
+		//echo " phone of group = " . $phone . "\n";
+	}
+	
+	return $array;
+}	
+
 function process_query($con, $uiid, $groupname, $description)
 {
 	$groupid = getGroupId($con, $groupname); 
@@ -103,7 +203,22 @@ function process_query($con, $uiid, $groupname, $description)
 	}
 	else
 	{
-		$responseMessage = "Query [" .  mysqli_insert_id($con) . "] created in group [".$groupid."].";
+		$queryid = mysqli_insert_id($con);
+		$responseMessage = "Query [" . $queryid . "] created in group [".$groupid."].";
+		
+	////// post message to group followers ////
+	
+		$groupfollowers = getGroupFollowers($con, $groupid);
+		$responseMessage .= " group followers: ";
+		$message = "q".$queryid.":".$description;
+		foreach ($groupfollowers as $uid => $phone) 
+		{
+			if($uid!=0)
+			{
+				$responseMessage .= "[".$uid.",".$phone."],";
+				sendMessage($phone, $message); 
+			}
+		}	
 	}
 	return $responseMessage;
 }
@@ -125,60 +240,46 @@ function process_answer($con, $uiid, $ref, $content)
 	
 	$responseMessage = "answer created.";
 	
-	/*
+	$relatedUsers = array(0=>"");
 	////// post message to questioner ////
-	$sql = "select phone from bpusers where id in (SELECT ownerid from bpquerys where id=" 
-		. $queryid . ") ";
-
-	if (!($result=mysqli_query($con,$sql)))
+	$questioner = getQuestioner($con, $queryid);
+	
+	//$responseMessage .= " querytioner: ";
+	
+	foreach ($questioner as $uid => $phone) 
 	{
-		echo "Error description: " . mysqli_error($con) ;
+		//$responseMessage .= "[".$uid.",".$phone."],";
+		$relatedUsers[$uid] = $phone;
 	}	
 
-	$num = mysqli_num_rows($result);
-	$i=0;
-	$phone = "";
-
-	while ($i < $num) 
-	{
-		if($row = $result->fetch_assoc())
-		{
-			$phone = $row["phone"];
-			//echo " phone of queryer = " . $phone . "\n";
-
-			sendMessage($phone, $content); 
-
-		}
-		$i++;  	
-	}
 	////// post message to group followers ////
 	
-	$sql = "select phone from bpusers where id in (SELECT uiid from bpgroupfollow where groupid in "
-		   . " ( select groupid from bpquerys where id=" . $queryid . " ) )" ;
-
-	if (!($result=mysqli_query($con,$sql)))
+	$groupfollowers = getQueryGroupFollowers($con, $queryid);
+	//$responseMessage .= " group followers: ";
+	foreach ($groupfollowers as $uid => $phone) 
 	{
-		echo "Error description: " . mysqli_error($con) ;
+		//$responseMessage .= "[".$uid.",".$phone."],";
+		$relatedUsers[$uid] = $phone;
 	}	
-
-	$num = mysqli_num_rows($result);
-	$i=0;
-	$phone = "";
-
-	while ($i < $num) 
-	{
-		if($row = $result->fetch_assoc())
-		{
-			$phone = $row["phone"];
-			//echo " phone of group = " . $phone . "\n";
-			sendMessage($phone, $content); 
-		}
-		$i++;
-	}
-	//////
 	
-	//function sendMessage($phone, $text)
-	*/
+	$queryfollowers = getQueryFollowers($con, $queryid);
+	//$responseMessage .= " query followers: ";
+	foreach ($queryfollowers as $uid => $phone) 
+	{
+		//$responseMessage .= "[".$uid.",".$phone."],";
+		$relatedUsers[$uid] = $phone;
+	}	
+	
+	$responseMessage .= " related users: ";
+	$message = "q".$queryid.":".$content;
+	foreach ($relatedUsers as $uid => $phone) 
+	{
+		if($uid!=0)
+		{
+			$responseMessage .= "[".$uid.",".$phone."],";
+			sendMessage($phone, $message); 
+		}
+	}	
 	
 	return $responseMessage;
 }
