@@ -8,6 +8,8 @@ function startsWith($haystack, $needle) {
 
 function sendMessage($phone, $text)
 {
+	return; // disable send sms message
+
 	if(substr($phone, 0,1)=="+")
 	{
 	// Install the library via PEAR or download the .zip file to your project folder.
