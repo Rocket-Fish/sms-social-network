@@ -8,23 +8,52 @@ function startsWith($haystack, $needle) {
 
 function sendMessage($phone, $text)
 {
+	$filename = "smssn.ini";
+	if( !file_exists ( $filename ))
+		$filename = "../smssn.ini";
+		
+	$fh = fopen($filename, 'r') or die("can't open file");
+	
+	$config = fread($fh, filesize($filename));
+	fclose($fh);
+	
+	
+	$splitted_String = explode("\n", $config);
+
+	$twiliosid  = "";
+	$twiliotoken  = "";
+	$twilionumber  = "";
+	
+	for($i = 0; $i < count($splitted_String); $i ++) 
+	{
+		if( false == strpos($splitted_String[$i], "="))
+			continue;
+
+//		echo " array = [" . $i . "] = [" . $array_[$i] ."]<br>";
+		
+		list($name, $value) = explode("=", $splitted_String[$i]);
+		
+		if($name=="twiliosid") 				$twiliosid 	 	 = trim($value);  // Your Account SID from www.twilio.com/user/account
+		else if($name=="twiliotoken") 		$twiliotoken 	 = trim($value);  // Your Auth Token from www.twilio.com/user/account
+		else if($name=="twilionumber") 		$twilionumber 	 = trim($value);  // A valid Twilio number
+	}
+	
+	// echo " twiliosid = [" . $twiliosid . "]  twiliotoken [" . $twiliotoken ."]  twilionumber [" . $twilionumber ."] call [" .$phone."] text [".$text."] <br>";
+		
 	return; // disable send sms message
 
 	if(substr($phone, 0,1)=="+")
 	{
-	// Install the library via PEAR or download the .zip file to your project folder.
-	// This line loads the library
-	require '../Twilio-Server/Services/Twilio.php';
+		// Install the library via PEAR or download the .zip file to your project folder.
+		// This line loads the library
+		require '../Twilio-Server/Services/Twilio.php';
 
-	$sid = "ACd4dbf05b911868c0d3b7517bc5b2aee5"; // Your Account SID from www.twilio.com/user/account
-	$token = "1f59fcb52b10490032e3587917f39b2a"; // Your Auth Token from www.twilio.com/user/account
-
-	$client = new Services_Twilio($sid, $token);
-	$message = $client->account->messages->sendMessage(
-  		'16479553883', // From a valid Twilio number
-  		$phone, //'12899239409', // Text this number
-  		$text //"Hello RECEIVER!"
-	);
+		$client = new Services_Twilio($twiliosid, $twiliotoken);
+		$message = $client->account->messages->sendMessage(
+			$twilionumber, // From a valid Twilio number
+			$phone, //'12899239409', // Text this number
+			$text //"Hello RECEIVER!"
+		);
 	}
 
 //echo '<h2> Sending Messages with Twilio </h2>';
