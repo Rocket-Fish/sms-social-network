@@ -9,12 +9,9 @@ function getRequests()
 	//echo "query string=".$_SERVER['QUERY_STRING'] . "<br>";	
 
 	$arrayOfPostData = explode('&', $stringData);
-	$arrayOfQueryData = explode('&', $queryString);
+	$arrayOfGetData = explode('&', $queryString);
 	
-	$splittedString = array_merge($arrayOfPostData, $arrayOfQueryData);
-	
-	
-	$array = array_values($splittedString);
+	$array = array_merge($arrayOfPostData, $arrayOfGetData);
 	
 	return $array;
 }

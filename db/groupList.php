@@ -49,7 +49,7 @@ include("smssndbconn.php");
 	<td><?php echo $row["id"] ?></td>
 	<td><?php echo $row["ownerid"] ?></td>
 	<td><?php echo $row["owner"] ?></td>
-	<td><?php echo $row["name"] ?></td>
+	<td><a href="groupqueries.php?id=<?php echo $row["id"] ?>"><?php echo $row["name"] ?> </a></td>
 	<td><?php echo $row["comment"] ?></td>
 </tr>		
 <?php	
